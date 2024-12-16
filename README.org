@@ -23,7 +23,7 @@ Now try building an updated image but this time pushing it to quay.io without si
   podman push ./bootc-demo.private  quay.io/rh-ee-mskoett/bootc-signed:latest
 #+end_src
 
-Let's see if `bootc` will let us upgrade to the new unsigned image:
+Let's see if ~bootc~ will let us upgrade to the new unsigned image:
 #+begin_example
 [root@localhost ~]# bootc upgrade
 ERROR Upgrading: Creating importer: failed to invoke method OpenImage: failed to invoke method OpenImage: A signature was required, but no signature exists
