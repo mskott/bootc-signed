@@ -1,0 +1,41 @@
+* Signed bootc images
+
+[[file:Containerfile][Containerfile]] is used to build an image where:
+
+[[file:quay.io.yaml][quay.io.yaml]] tells Podman to download Sigstore signatures when pulling images.
+
+[[file:policy.json][policy.json]] tells Podman that images pulled from quay.io/rh-ee-mskoett/bootc-signed must be verified with [[file:bootc-demo.pub][bootc-demo.pub]]
+
+Build and push a signed image:
+#+begin_src shell
+  podman build -t quay.io/rh-ee-mskoett/bootc-signed:latest .
+  podman push --sign-by-sigstore-private-key ./bootc-demo.private  quay.io/rh-ee-mskoett/bootc-signed:latest
+#+end_src
+
+Boot a VM with the image using podman-bootc:
+#+begin_src shell
+  podman-bootc run --filesystem=xfs quay.io/rh-ee-mskoett/bootc-signed:latest
+#+end_src
+
+Now try building an updated image but this time pushing it to quay.io without signing it:
+#+begin_src shell
+  podman build -t quay.io/rh-ee-mskoett/bootc-signed:latest .
+  podman push ./bootc-demo.private  quay.io/rh-ee-mskoett/bootc-signed:latest
+#+end_src
+
+Let's see if `bootc` will let us upgrade to the new unsigned image:
+#+begin_example
+[root@localhost ~]# bootc upgrade
+ERROR Upgrading: Creating importer: failed to invoke method OpenImage: failed to invoke method OpenImage: A signature was required, but no signature exists
+#+end_example
+
+** Creating a key-pair for signing
+Using Skopeo
+#+begin_src shell
+  skopeo generate-sigstore-key --output-prefix myKey
+#+end_src
+
+Cosign can also be used to generate a key-pair:
+#+begin_src shell
+  cosign generate-key-pair --output-key-prefix myKey
+#+end_src
